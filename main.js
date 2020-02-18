@@ -38,28 +38,34 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 // const ADODB = require('node-adodb');
 var ADODB = require("node-adodb");
+var SqlString = require("sqlstring");
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var connection, queryTablePersona, users, error_1;
+        var connection, queryTablePersona, dealers, users, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     connection = ADODB.open('DSN=DataFlex Test32;');
                     _a.label = 1;
                 case 1:
-                    _a.trys.push([1, 3, , 4]);
+                    _a.trys.push([1, 4, , 5]);
                     queryTablePersona = crearConsulta();
-                    return [4 /*yield*/, connection.query(queryTablePersona)];
+                    console.log(queryTablePersona);
+                    return [4 /*yield*/, connection.query('select * from dealers')
+                        // console.log(dealers);
+                    ];
                 case 2:
-                    users = _a.sent();
-                    console.log(typeof users);
-                    console.log(users);
-                    return [3 /*break*/, 4];
+                    dealers = _a.sent();
+                    return [4 /*yield*/, connection.execute(queryTablePersona)];
                 case 3:
+                    users = _a.sent();
+                    console.log(users);
+                    return [3 /*break*/, 5];
+                case 4:
                     error_1 = _a.sent();
                     console.error(error_1);
-                    return [3 /*break*/, 4];
-                case 4: return [2 /*return*/];
+                    return [3 /*break*/, 5];
+                case 5: return [2 /*return*/];
             }
         });
     });
@@ -73,6 +79,105 @@ function crearConsulta() {
     var inQuery = "SELECT * FROM ALLHITS WHERE WEEKS IN (4,5)";
     var exists = "SELECT * FROM ALLHITS WHERE EXISTS (select RECORD_NUMBER FROM ALLHITS WHERE WEEKS > 4 AND WEEKS < 6 )";
     var between = "SELECT * FROM ALLHITS WHERE ENTRYDATE BETWEEN {d '1992-05-27'} AND {d '1992-07-27'}";
-    return "\n  SELECT Top 15\n  *\n  FROM\n  (\n   SELECT TOP 45\n   *\n   FROM ALLHITS\n   ORDER BY RECORD_NUMBER\n  )\n";
-    "\n  SELECT *\n  FROM (\n      SELECT Top 5 sub.ClientCode\n      FROM (\n          SELECT TOP 15 ALLHITS.RECORD_NUMBER\n          FROM ALLHITS\n          ORDER BY ALLHITS.RECORD_NUMBER\n      ) sub\n     ORDER BY sub.RECORD_NUMBER DESC\n  ) subOrdered\n  ORDER BY subOrdered.RECORD_NUMBER\n  ";
+    var registro = {
+        NAME: 'a',
+        ADDR1: 'a',
+        ADDR2: 'a',
+        ADDR3: 'a',
+        COUNTRY: 'a',
+        PHONE: 'a',
+        FAX: 'a',
+        EMAIL: 'a',
+        ACTIVE: 'a'
+    };
+    var registroHits = {
+        ENTRYDATE: '1992-07-27',
+        WEEKS: 3,
+        TITLE: 'MA',
+        ARTIST: 'ME',
+        SINGLE_ALBUM: 'C',
+        POP_COUNTRY: 'S'
+    };
+    //const insercion = crearConsultaInsercion('DEALERS', registro);
+    var insercion = crearConsultaInsercion('ALLHITS', registroHits);
+    console.log(insercion);
+    return "";
+    "INSERT INTO ALLHITS (\n    ENTRYDATE, \n    WEEKS, \n    TITLE, \n    ARTIST, \n    SINGLE_ALBUM, \n    POP_COUNTRY \n  ) VALUES({d '1992-07-27'},3,'I Saw the Light','Wynonna','S','C')";
+}
+function crearConsultaInsercion(nombreTabla, objeto) {
+    var consulta = "INSERT INTO " + nombreTabla + " ( ";
+    var parametros = '';
+    var valores = [];
+    var arregloObjeto = Object.keys(objeto);
+    arregloObjeto
+        .forEach(function (llave, indice) {
+        var coma = indice === arregloObjeto.length - 1 ? '' : ',';
+        consulta = consulta + ("" + llave + coma + " ");
+        parametros = parametros + ("?" + coma + " ");
+        var valor = objeto[llave];
+        if (typeof valor.getMonth === 'function') {
+            valores.push("{d " + formatDate(valor) + "}");
+        }
+        else {
+            if (typeof objeto[llave] === 'string') {
+                var esFechaValida = esFechaString(objeto[llave]);
+                if (esFechaValida) {
+                    valores.push("{d " + valor + "}");
+                }
+                else {
+                    valores.push(objeto[llave]);
+                }
+            }
+            else {
+                valores.push(objeto[llave]);
+            }
+        }
+    });
+    consulta = consulta + (") VALUES ( " + parametros + " )");
+    return SqlString.format(consulta, valores);
+}
+function formatDate(date) {
+    var d = new Date(date), month = '' + (d.getMonth() + 1), day = '' + d.getDate(), year = d.getFullYear();
+    if (month.length < 2)
+        month = '0' + month;
+    if (day.length < 2)
+        day = '0' + day;
+    return [year, month, day].join('-');
+}
+function esFechaString(fecha) {
+    var splitFecha = fecha.split('-');
+    if (splitFecha.length === 3) {
+        var anio = splitFecha[0];
+        var mes = splitFecha[1];
+        var dia = splitFecha[2];
+        var primeroTieneCuatroDigitos = anio.length === 4;
+        var segundoTieneDosDigitos = mes.length === 2;
+        var terceroTieneDosDigitos = dia.length === 2;
+        var anioNumero = Number(anio);
+        var mesNumero = Number(mes);
+        var diaNumero = Number(dia);
+        var primeroEsNumero = !isNaN(anioNumero);
+        var segundoEsNumero = !isNaN(mesNumero);
+        var terceroEsNumero = !isNaN(diaNumero);
+        var primeroValido = primeroTieneCuatroDigitos && primeroEsNumero;
+        var segundoValido = segundoTieneDosDigitos && segundoEsNumero;
+        var terceroValido = terceroTieneDosDigitos && terceroEsNumero;
+        if (primeroValido && segundoValido && terceroValido) {
+            var mesValido = mesNumero > 1 && mesNumero < 12;
+            var anioValido = anioNumero > 0 && anioNumero < 4000;
+            var diaValido = diaNumero > 1 && diaNumero < 31;
+            if (mesValido && anioValido && diaValido) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        return false;
+    }
 }

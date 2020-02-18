@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/adrianeguez/vdf-odbc-node#readme",
   "dependencies": {
-    "node-adodb": "^5.0.2"
+    "node-adodb": "^5.0.2",
+    "sqlstring": "^2.3.1"
   }
 }
