@@ -1,0 +1,23 @@
+{
+  "name": "vdf-odbc-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run build && node main.js",
+    "build": "(tsc main.ts || echo)"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adrianeguez/vdf-odbc-node.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/adrianeguez/vdf-odbc-node/issues"
+  },
+  "homepage": "https://github.com/adrianeguez/vdf-odbc-node#readme",
+  "dependencies": {
+    "node-adodb": "^5.0.2"
+  }
+}
